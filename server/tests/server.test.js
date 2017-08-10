@@ -12,7 +12,9 @@ const testTodos = [
     },
     {
         _id: new ObjectID(),
-        text: 'Test todo 2'
+        text: 'Test todo 2',
+        completed: true,
+        completedAt: 333
     }
 ];
 
@@ -111,52 +113,63 @@ describe('GET /todos:id', () => {
 
 });
 
-describe('DELETE /todos:id', () => {
 
-    it('should actually delete the doc', (done) => {
 
-        let id = testTodos[0]._id.toHexString();
+describe('PATCH /todos:id', () => {
+
+    it('should update the todo', (done) => {
+
+        let id = testTodos[0]._id.toHexString(),
+            expectedPatchText = 'Test todo PATCH text';
 
         request(app)
-            .delete(`/todos/${id}`)
-            .end((error, response) => {
-                if (error) {
-                    return done(error);
-                }
-
-                Todo.findById(id).then((todo) => {
-                    expect(todo).toNotExist();
-                    done();
-                }).catch((error) => {
-                    done(error);
-                })
-            });
+            .patch(`/todos/${id}`)
+            .send({
+                text: expectedPatchText,
+                completed: true
+            })
+            .expect(200)
+            .expect((response) => {
+                expect(response.body.todo.text).toBe(expectedPatchText);
+                expect(response.body.todo.completed).toBe(true);
+                expect(response.body.todo.completedAt).toBeA('number');
+            })
+            .end(done);
     });
 
 
-    it('should return requested todo doc', (done) => {
+    it('should clear completedAt when todo is not completed', (done) => {
 
-        let id = testTodos[0]._id.toHexString();
-        
+        let id = testTodos[1]._id.toHexString(),
+            expectedPatchText = 'Test todo PATCH text';
+
         request(app)
-            .delete(`/todos/${id}`)
+            .patch(`/todos/${id}`)
+            .send({
+                text: expectedPatchText,
+                completed: false
+            })
             .expect(200)
             .expect((response) => {
-                expect(response.body.todo._id).toBe(id);
+                expect(response.body.todo.text).toBe(expectedPatchText);
+                expect(response.body.todo.completed).toBe(false);
+                expect(response.body.todo.completedAt).toBe(null);
             })
             .end(done);
     });
 
     it('should throw a 404 if todo not found', (done) => {
         request(app)
-            .delete(`/todos/${new ObjectID()}`)
+            .patch(`/todos/${new ObjectID()}`)
+            .send({ text: 'anything' })
             .expect(404)
             .end(done);
     });
 
     it('should throw a 404 with invalid ids', (done) => {
         request(app)
-            .delete(`/todos/foobar`)
+            .patch(`/todos/foobar`)
+            .send({ text: 'anything' })
             .expect(404)
             .end(done);
     });
