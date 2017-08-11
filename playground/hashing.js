@@ -1,17 +1,34 @@
-// example of a JWT
-
 const { SHA256 } = require('crypto-js');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
-var data = {
-    id: 10
-};
+// BCRYPT
 
-var token = jwt.sign(data, '123abc');
-console.log(token);
+var password = '123abc';
 
-var decoded = jwt.verify(token, '123abc');
-console.log(decoded);
+// bcrypt.genSalt(10, (error, salt) => {
+//     bcrypt.hash(password, salt, (err, hash) => {
+//         console.log(hash);
+//     });
+// });
+
+var hashedPassword = '$2a$10$yH7i4f9.6qX2xb3tJJwWdOTmw3SvDsspJHf3mJ28FVKe0BoXJoLlC';
+
+bcrypt.compare(password, hashedPassword, (error, result) => {
+    console.log(result);
+});
+
+// JWT example
+
+// var data = {
+//     id: 10
+// };
+
+// var token = jwt.sign(data, '123abc');
+// console.log(token);
+
+// var decoded = jwt.verify(token, '123abc');
+// console.log(decoded);
 
 
 // var message = 'I am user number 3';
