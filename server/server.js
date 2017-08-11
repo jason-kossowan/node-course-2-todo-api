@@ -23,7 +23,7 @@ app.post('/todos', (request, response) => {
         response.send(document);
     }, (error) => {
         response.status(400).send(error);
-    })
+    });
 });
 
 app.get('/todos', (request, response) => {
@@ -94,6 +94,25 @@ app.patch('/todos/:id', (request, response) => {
     }).catch((error) => {
         response.status(400).send({});
     });
+});
+
+app.post('/users', (request, response) => {
+    let body = _.pick(request.body, ['email', 'password']);
+
+    // missing property validation not required since the validation will catch missing properties    
+
+    var user = new User(body);
+
+    user.save()
+        .then(() => {
+            return user.generateAuthToken();
+        }).then((token) => {
+            response.header('x-auth', token).send(user);
+        }).catch((error) => {
+            (error) => {
+                response.status(400).send({});
+            };
+        });
 });
 
 app.listen(port, () => {
