@@ -119,6 +119,19 @@ app.get('/users/me', authenticate, (request, response) => {
     response.send(request.user);
 });
 
+app.post('/users/login', (request, response) => {
+
+    let body = _.pick(request.body, ['email', 'password']);
+
+    var user = User.findByCredentials(body.email, body.password).then((user) => {
+        return user.generateAuthToken().then((token) => {
+            response.header('x-auth', token).send(user);
+        });
+    }).catch((error) => {
+        response.status(400).send();
+    });
+});
+
 app.listen(port, () => {
     console.log(`App started on port ${port}`);
     console.log(`Database connected at ${db}`);
