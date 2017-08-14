@@ -12,6 +12,7 @@ const { authenticate } = require('./middleware/authenticate');
 
 const app = express();
 const port = process.env.PORT;
+const db = process.env.MONGODB_URI;
 
 app.use(bodyParser.json());
 
@@ -109,10 +110,8 @@ app.post('/users', (request, response) => {
             return user.generateAuthToken();
         }).then((token) => {
             response.header('x-auth', token).send(user);
-        }).catch((error) => {
-            (error) => {
-                response.status(400).send({});
-            };
+        }, (error) => {
+            response.status(400).send({});
         });
 });
 
@@ -122,6 +121,7 @@ app.get('/users/me', authenticate, (request, response) => {
 
 app.listen(port, () => {
     console.log(`App started on port ${port}`);
+    console.log(`Database connected at ${db}`);
 });
 
 module.exports = { app };
