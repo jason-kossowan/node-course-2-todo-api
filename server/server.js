@@ -133,7 +133,6 @@ app.post('/users/login', (request, response) => {
 });
 
 app.delete('/users/me/token', authenticate, (request, response) => {
-    console.log('Token:', request.token);
     request.user.removeToken(request.token).then(() => {
         response.status(200).send();
     },(error) => {
