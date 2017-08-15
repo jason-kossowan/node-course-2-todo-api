@@ -25,20 +25,31 @@ const testUsers = [
     {
         _id: userTwoId,
         email: 'testUser2@somewhere.com',
-        password: 'testUser2Password'
+        password: 'testUser2Password',
+        tokens: [
+            {
+                access: 'auth',
+                token: jwt.sign({
+                    _id: userTwoId,
+                    access: 'auth'
+                }, 'abc123').toString()
+            }
+        ]
     }
 ];
 
 const testTodos = [
     {
         _id: new ObjectID(),
-        text: 'Test todo 1'
+        text: 'Test todo 1',
+        _creator: userOneId
     },
     {
         _id: new ObjectID(),
         text: 'Test todo 2',
         completed: true,
-        completedAt: 333
+        completedAt: 333,
+        _creator: userTwoId
     }
 ];
 
