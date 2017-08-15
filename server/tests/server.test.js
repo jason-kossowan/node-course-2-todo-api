@@ -224,7 +224,7 @@ describe('POST /users', () => {
                     expect(user).toExist();
                     expect(user.password).toNotBe(password);
                     done();
-                })
+                }).catch((error) => { done(error) });;
             });
 
     });
@@ -252,4 +252,59 @@ describe('POST /users', () => {
             .end(done);
     });
 
+});
+
+describe('POST /users/login', () => {
+    
+    it('should login user and return auth token', (done) => {
+        let user = testUsers[1],
+            { email, password } = user;
+
+        request(app)
+            .post('/users/login')
+            .send({ email, password })
+            .expect(200)
+            .expect((response) => {
+                expect(response.headers['x-auth']).toExist();
+            })
+            .end(
+            (error, response) => {
+                if (error) {
+                    return done(error);
+                }
+
+                User.findById(user._id).then((user) => {
+                    expect(user.tokens[0]).toInclude({
+                        access: 'auth',
+                        token: response.headers['x-auth']
+                    });
+                    done();
+                }).catch((error) => { done(error) });
+            });
+    });
+
+    it('should return invalid login', (done) => {
+        let user = testUsers[1],
+            email = user.email,
+            password = 'iamhaxx0r';
+
+        request(app)
+            .post('/users/login')
+            .send({ email, password })
+            .expect(400)
+            .expect((response) => {
+                expect(response.headers['x-auth']).toNotExist();
+            })
+            .end(
+            (error, response) => {
+                if (error) {
+                    return done(error);
+                }
+
+                User.findById(user._id).then((user) => {
+                    expect(user.tokens.length).toBe(0);
+                    done();
+                }).catch((error) => { done(error) });
+            });
+    });
 });

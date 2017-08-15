@@ -132,6 +132,15 @@ app.post('/users/login', (request, response) => {
     });
 });
 
+app.delete('/users/me/token', authenticate, (request, response) => {
+    console.log('Token:', request.token);
+    request.user.removeToken(request.token).then(() => {
+        response.status(200).send();
+    },(error) => {
+        response.status(400).send();
+    })
+});
+
 app.listen(port, () => {
     console.log(`App started on port ${port}`);
     console.log(`Database connected at ${db}`);
