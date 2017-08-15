@@ -16,48 +16,52 @@ const db = process.env.MONGODB_URI;
 
 app.use(bodyParser.json());
 
-app.post('/todos', authenticate, (request, response) => {
-    var todo = new Todo({
-        text: request.body.text,
-        _creator: request.user._id
-    })
-
-    todo.save().then((document) => {
+app.post('/todos', authenticate, async (request, response) => {
+    try {
+        const todo = new Todo({
+                                text: request.body.text,
+                                _creator: request.user._id
+                            });
+        const document = await todo.save();
         response.send(document);
-    }, (error) => {
+
+    } catch (error) {
         response.status(400).send(error);
-    });
+    }
 });
 
-app.get('/todos', authenticate, (request, response) => {
-    Todo.find({
-        _creator: request.user._id
-    }).then((todos) => {
+app.get('/todos', authenticate, async (request, response) => {
+    try {
+        const todos = await Todo.find({
+            _creator: request.user._id
+        });
         response.send({ todos });
-    }, (error) => {
+    } catch (error)  {
         response.status(400).send(error);
-    });
+    }
 });
 
-app.get('/todos/:id', authenticate, (request, response) => {
+app.get('/todos/:id', authenticate, async (request, response) => {
     var id = request.params.id;
 
     if (!ObjectID.isValid(id)) {
         return response.status(404).send();
     };
 
-    Todo.findOne({
-        _id: id,
-        _creator: request.user._id
-    }).then((todo) => {
+    try {
+        const todo = await Todo.findOne({
+                            _id: id,
+                            _creator: request.user._id
+                        });
+                        
         if (!todo) {
             return response.status(404).send();
         }
 
         response.send({ todo });
-    }).catch((error) => {
+    } catch (error) {
         response.status(400).send();
-    });
+    }
 });
 
 app.delete('/todos/:id', authenticate, async (request, response) => {
@@ -82,23 +86,9 @@ app.delete('/todos/:id', authenticate, async (request, response) => {
     catch (error) {
         response.status(400).send();
     }
-
-
-    // Todo.findOneAndRemove({
-    //     _id: id,
-    //     _creator: request.user._id
-    // }).then((todo) => {
-    //     if (!todo) {
-    //         return response.status(404).send();
-    //     }
-
-    //     response.send({ todo });
-    // }).catch((error) => {
-    //     response.status(400).send();
-    // });
 });
 
-app.patch('/todos/:id', authenticate, (request, response) => {
+app.patch('/todos/:id', authenticate, async (request, response) => {
     var id = request.params.id;
     var body = _.pick(request.body, ['text', 'completed']);
 
@@ -113,18 +103,21 @@ app.patch('/todos/:id', authenticate, (request, response) => {
         body.completedAt = null;
     }
 
-    Todo.findOneAndUpdate({
-        _id: id,
-        _creator: request.user._id
-    }, { $set: body }, { new: true }).then((todo) => {
+    try {
+        const todo = await Todo.findOneAndUpdate({
+                                _id: id,
+                                _creator: request.user._id
+                            }, { $set: body }, { new: true });
+
         if (!todo) {
             return response.status(404).send();
         }
 
         response.send({ todo });
-    }).catch((error) => {
+
+    } catch(error) {
         response.status(400).send();
-    });
+    }
 });
 
 app.post('/users', async (request, response) => {
